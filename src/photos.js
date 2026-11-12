@@ -1,0 +1,21 @@
+// Fotos de exemplo (Unsplash, licença livre). IDs em assets/photos/unsplash-ids.json.
+export const photos = {
+  pacoca: require('../assets/photos/pacoca.jpg'),
+  pacoca2: require('../assets/photos/pacoca2.jpg'),
+  filhotes: require('../assets/photos/filhotes.jpg'),
+  mel: require('../assets/photos/mel.jpg'),
+  melAntes: require('../assets/photos/melAntes.jpg'),
+  melDepois: require('../assets/photos/melDepois.jpg'),
+  thor: require('../assets/photos/thor.jpg'),
+  luna: require('../assets/photos/luna.jpg'),
+  luna2: require('../assets/photos/luna2.jpg'),
+  luna3: require('../assets/photos/luna3.jpg'),
+  amora: require('../assets/photos/amora.jpg'),
+  amora2: require('../assets/photos/amora2.jpg'),
+  bidu: require('../assets/photos/bidu.jpg'),
+  frida: require('../assets/photos/frida.jpg'),
+  nina: require('../assets/photos/nina.jpg'),
+  pipoca: require('../assets/photos/pipoca.jpg'),
+  amigos: require('../assets/photos/amigos.jpg'),
+  dupla: require('../assets/photos/dupla.jpg'),
+};
