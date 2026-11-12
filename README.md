@@ -39,7 +39,13 @@ O app liga as duas metades do produto, a rede social e os serviços, num ciclo s
 
 ## Ver no seu celular
 
-**Jeito mais rápido:** instale o Expo Go e escaneie o QR code do [Snack do netpet](https://snack.expo.dev/TFY9MnkSTaG7i0j0o3-VB). Não precisa de computador. O Snack é uma cópia da etapa 1 e não se atualiza sozinho com o repositório.
+**Jeito mais rápido:** instale o Expo Go e escaneie este QR code. Não precisa de computador.
+
+<p align="center">
+  <img src="docs/qrcode-expo-go.png" alt="QR code para abrir o netpet no Expo Go" width="200" />
+</p>
+
+O QR code abre o [Snack do netpet](https://snack.expo.dev/mgcmLHwOFcMhDRpySRSWm), uma cópia do app que não se atualiza sozinha. Para publicar uma cópia nova depois de mudar o código, rode `python3 scripts/publish-snack.py` e troque o link e o QR code acima.
 
 **Rodando do código:**
 
