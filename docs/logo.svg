@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="96" viewBox="0 0 360 96" role="img" aria-label="netpet">
+  <rect x="4" y="8" width="80" height="80" rx="26" fill="#D9923B"/>
+  <g fill="#2B1B08">
+    <ellipse cx="27" cy="45" rx="5.6" ry="7.2"/>
+    <ellipse cx="38" cy="31" rx="5.6" ry="7.6"/>
+    <ellipse cx="50" cy="31" rx="5.6" ry="7.6"/>
+    <ellipse cx="61" cy="45" rx="5.6" ry="7.2"/>
+    <path d="M44 47c-8.4 0-16 8.4-16 16.6 0 5.6 4 8.6 8.3 8.6 3.3 0 5.4-1.7 7.7-1.7s4.4 1.7 7.7 1.7c4.3 0 8.3-3 8.3-8.6C60 55.4 52.4 47 44 47z"/>
+  </g>
+  <text x="104" y="66" font-family="Nunito, 'Trebuchet MS', system-ui, sans-serif" font-size="50" font-weight="700" fill="#D9923B">netpet</text>
+</svg>
