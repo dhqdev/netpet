@@ -39,6 +39,10 @@ O app liga as duas metades do produto, a rede social e os serviços, num ciclo s
 
 ## Ver no seu celular
 
+**Jeito mais rápido:** instale o Expo Go e escaneie o QR code do [Snack do netpet](https://snack.expo.dev/TFY9MnkSTaG7i0j0o3-VB). Não precisa de computador. O Snack é uma cópia da etapa 1 e não se atualiza sozinho com o repositório.
+
+**Rodando do código:**
+
 Você precisa do [Node.js](https://nodejs.org) 20 ou mais novo no computador e do app **Expo Go** no celular ([App Store](https://apps.apple.com/app/expo-go/id982107779) · [Google Play](https://play.google.com/store/apps/details?id=host.exp.exponent)).
 
 ```bash
