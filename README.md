@@ -195,6 +195,7 @@ assets/
 scripts/
   publish-snack.py    publica uma cópia nova no Expo Snack
 docs/                 logo e capturas deste README
+server/               API em Node + banco Postgres (veja server/README.md)
 ```
 
 A navegação é própria, e não o Expo Router, para o app rodar igual no Expo Snack e no Expo Go sem passo de build.
@@ -203,7 +204,8 @@ A navegação é própria, e não o Expo Router, para o app rodar igual no Expo 
 
 - [x] Três estilos visuais e sistema de design
 - [x] Entrada, Início, social, serviços, matilhas, pet, ajustes e modo parceiro
-- [ ] Back-end: contas, fotos, agendamentos e mensagens de verdade
+- [x] Back-end: contas, fotos, agendamentos e mensagens de verdade ([server/](server/README.md))
+- [ ] Ligar as telas do app à API
 - [ ] Pagamentos com Pix e cartão por uma processadora
 - [ ] Notificações push e localização para o alerta de pet perdido
 - [ ] Publicar nas lojas com EAS Build
