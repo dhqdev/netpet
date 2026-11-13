@@ -5,7 +5,7 @@ import { Icon } from '../icons';
 import { Tap, PetAvatar, PartnerMark, PostMedia, Photo, Label } from '../ui';
 import { useTheme, alpha } from '../theme';
 import { PETS, PARTNERS, WEEK, TODAY_INDEX, AGENDA, STORIES } from '../data';
-import { usePostState, FEED, PostHeader, Caption, PartnerFacts } from './shared';
+import { usePostState, useHome, PostHeader, Caption, PartnerFacts } from './shared';
 
 // Direção 3, Cor do pet: neutros de pedra e o tom do pet ativo no topo, no dia
 // de hoje e na patinha. Fotos de ponta a ponta, com as ações sobre a imagem.
@@ -14,6 +14,7 @@ export default function HomePet({ onSwitchPet, onPetList, onMore, bottomPad }) {
   const t = useTheme();
   const { c } = t;
   const ps = usePostState();
+  const h = useHome();
   const [open, setOpen] = useState(true);
   const [day, setDay] = useState(TODAY_INDEX);
   const agenda = AGENDA[t.pet.key] || {};
@@ -36,8 +37,8 @@ export default function HomePet({ onSwitchPet, onPetList, onMore, bottomPad }) {
           <Text style={{ color: c.text, fontFamily: t.fonts.title, fontSize: 28, lineHeight: 34 }}>{t.pet.name}</Text>
           <Text numberOfLines={1} style={{ color: c.text2, fontSize: 13.5, marginTop: -2 }}>{t.pet.status} · {t.pet.age}</Text>
         </View>
-        <PlainButton icon="bell" label="Notificações" dot />
-        <PlainButton icon="chat" label="Mensagens" />
+        <PlainButton icon="bell" label="Notificações" dot onPress={h.notifications} />
+        <PlainButton icon="chat" label="Mensagens" onPress={h.dms} />
       </View>
 
       {/* Semana em linha, sem cartão */}
@@ -65,7 +66,7 @@ export default function HomePet({ onSwitchPet, onPetList, onMore, bottomPad }) {
       </View>
 
       {/* Hoje, em formato de bilhete */}
-      <Tap scale={0.99} hitSlop={0} label="Compromisso do dia"
+      <Tap scale={0.99} hitSlop={0} onPress={() => h.openDay(item)} label="Compromisso do dia"
         style={{ flexDirection: 'row', marginHorizontal: 16, marginTop: 10, backgroundColor: c.surface, borderRadius: t.radius.card, overflow: 'hidden', minHeight: 84 }}>
         <View style={{ width: 88, backgroundColor: alpha(t.petColor, t.dark ? 0.24 : 0.22), alignItems: 'center', justifyContent: 'center', paddingVertical: 12 }}>
           <Text style={{ color: t.petText, fontSize: 12, fontWeight: '600' }}>{day === TODAY_INDEX ? 'Hoje' : WEEK[day].label}</Text>
@@ -86,14 +87,14 @@ export default function HomePet({ onSwitchPet, onPetList, onMore, bottomPad }) {
 
       {/* Histórias: cada anel na cor do próprio pet */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 18, paddingBottom: 2 }}>
-        <View style={{ alignItems: 'center', marginRight: 14 }}>
+        <Tap onPress={h.newStory} label="Criar sua história" style={{ alignItems: 'center', marginRight: 14 }}>
           <View style={{ width: 68, height: 68, borderRadius: 34, borderWidth: 1.7, borderColor: c.text2, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="plus" size={22} color={c.text} />
           </View>
           <Text style={{ color: c.text2, fontSize: 12, marginTop: 6 }}>Sua história</Text>
-        </View>
+        </Tap>
         {STORIES.map((k) => (
-          <Tap key={k} style={{ alignItems: 'center', marginRight: 14 }} label={`História ${PETS[k].article} ${PETS[k].name}`}>
+          <Tap key={k} onPress={() => h.story(k)} style={{ alignItems: 'center', marginRight: 14 }} label={`História ${PETS[k].article} ${PETS[k].name}`}>
             <PetAvatar pet={k} size={58} ring={3} />
             <Text style={{ color: c.text, fontSize: 12, marginTop: 6 }}>{PETS[k].name}</Text>
           </Tap>
@@ -101,7 +102,7 @@ export default function HomePet({ onSwitchPet, onPetList, onMore, bottomPad }) {
       </ScrollView>
 
       {/* Feed de ponta a ponta */}
-      {FEED.map((post) => {
+      {ps.feed.map((post) => {
         if (post.type === 'suggestion') return <Suggestion key={post.id} post={post} />;
         if (post.type === 'sponsored') return <Sponsored key={post.id} post={post} onMore={onMore} />;
         const liked = !!ps.liked[post.id];
@@ -118,8 +119,8 @@ export default function HomePet({ onSwitchPet, onPetList, onMore, bottomPad }) {
               />
               <View style={{ position: 'absolute', right: 6, bottom: 10, alignItems: 'center' }}>
                 <Over icon="paw" text={ps.paws(post)} active={liked} tone={t.dark ? t.pet.colorDark : t.pet.color} onPress={() => ps.toggleLike(post.id)} label="Dar patinha" />
-                <Over icon="comment" text={String(post.comments)} label="Comentar" />
-                <Over icon="share" label="Compartilhar" />
+                <Over icon="comment" text={String(post.comments)} onPress={() => h.post(post.id)} label="Comentar" />
+                <Over icon="share" onPress={() => h.share(post.id)} label="Compartilhar" />
                 <Over icon="bookmark" active={saved} onPress={() => ps.toggleSave(post.id)} label="Salvar" />
               </View>
             </PostMedia>
@@ -131,10 +132,10 @@ export default function HomePet({ onSwitchPet, onPetList, onMore, bottomPad }) {
   );
 }
 
-function PlainButton({ icon, label, dot }) {
+function PlainButton({ icon, label, dot, onPress }) {
   const t = useTheme();
   return (
-    <Tap label={label} style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+    <Tap onPress={onPress} label={label} style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name={icon} size={24} color={t.c.text} />
       {dot ? <View style={{ position: 'absolute', top: 10, right: 10, width: 9, height: 9, borderRadius: 5, backgroundColor: t.petText }} /> : null}
     </Tap>
@@ -152,6 +153,7 @@ function Over({ icon, text, active, onPress, label, tone }) {
 
 function Sponsored({ post, onMore }) {
   const t = useTheme();
+  const h = useHome();
   const { c } = t;
   const partner = PARTNERS[post.partner];
   return (
@@ -172,7 +174,7 @@ function Sponsored({ post, onMore }) {
       <PostMedia post={post} liked onLike={() => {}} />
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12 }}>
         <Text style={{ flex: 1, color: c.text, fontSize: 14.5, lineHeight: 20, marginRight: 12 }}>{post.caption}</Text>
-        <Tap label={post.cta} style={{ height: 44, paddingHorizontal: 18, borderRadius: 22, backgroundColor: c.text, alignItems: 'center', justifyContent: 'center' }}>
+        <Tap onPress={() => h.partner(post.partner)} label={post.cta} style={{ height: 44, paddingHorizontal: 18, borderRadius: 22, backgroundColor: c.text, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: c.bg, fontSize: 14.5, fontWeight: '600' }}>Agendar</Text>
         </Tap>
       </View>
@@ -182,6 +184,7 @@ function Sponsored({ post, onMore }) {
 
 function Suggestion({ post }) {
   const t = useTheme();
+  const h = useHome();
   const { c } = t;
   const partner = PARTNERS[post.partner];
   return (
@@ -196,7 +199,7 @@ function Suggestion({ post }) {
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
         <Text style={{ flex: 1, color: c.text2, fontSize: 13.5 }}>Aberto agora · vaga {partner.nextSlot}</Text>
-        <Tap label="Agendar banho" style={{ height: 44, paddingHorizontal: 18, borderRadius: 22, backgroundColor: t.petColor, alignItems: 'center', justifyContent: 'center' }}>
+        <Tap onPress={() => h.book(post.partner)} label="Agendar banho" style={{ height: 44, paddingHorizontal: 18, borderRadius: 22, backgroundColor: t.petColor, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: t.pet.onColor, fontSize: 14.5, fontWeight: '600' }}>Agendar banho</Text>
         </Tap>
       </View>

@@ -4,7 +4,7 @@ import { Icon } from '../icons';
 import { Tap, PetAvatar, PartnerMark, PostMedia, Photo, Hairline, Label } from '../ui';
 import { useTheme, alpha } from '../theme';
 import { PETS, PARTNERS, WEEK, TODAY_INDEX, TODAY_LONG, AGENDA, STORIES } from '../data';
-import { usePostState, FEED, PostHeader, Caption, PartnerFacts } from './shared';
+import { usePostState, useHome, PostHeader, Caption, PartnerFacts } from './shared';
 
 // Direção 1, Aveia: muito respiro, cartões brancos sobre o fundo aveia,
 // separadores finíssimos e o caramelo só no dia de hoje, na patinha e nos botões.
@@ -13,6 +13,7 @@ export default function HomeAveia({ onSwitchPet, onPetList, onMore, bottomPad })
   const t = useTheme();
   const { c } = t;
   const ps = usePostState();
+  const h = useHome();
   const [open, setOpen] = useState(true);
   const [day, setDay] = useState(TODAY_INDEX);
   const agenda = AGENDA[t.pet.key] || {};
@@ -29,9 +30,9 @@ export default function HomeAveia({ onSwitchPet, onPetList, onMore, bottomPad })
           <Text style={{ color: c.text2, fontSize: 13.5 }}>{TODAY_LONG}</Text>
           <Text style={{ color: c.text, fontFamily: t.fonts.title, fontSize: 27, lineHeight: 33 }}>Oi, {t.pet.name}</Text>
         </View>
-        <RoundButton icon="bell" label="Notificações" dot />
+        <RoundButton icon="bell" label="Notificações" dot onPress={h.notifications} />
         <View style={{ width: 8 }} />
-        <RoundButton icon="chat" label="Mensagens" />
+        <RoundButton icon="chat" label="Mensagens" onPress={h.dms} />
       </View>
 
       {/* Semana e cartão Hoje */}
@@ -64,7 +65,7 @@ export default function HomeAveia({ onSwitchPet, onPetList, onMore, bottomPad })
           </View>
         ) : null}
         <Hairline inset={16} />
-        <Tap scale={0.99} hitSlop={0} style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }} label="Compromisso do dia">
+        <Tap scale={0.99} hitSlop={0} style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }} onPress={() => h.openDay(item)} label="Compromisso do dia">
           <View style={{ width: 44, height: 44, borderRadius: t.radius.tile, backgroundColor: alpha(c.accent, t.dark ? 0.2 : 0.16), alignItems: 'center', justifyContent: 'center' }}>
             <Icon name={item ? item.icon : 'calendar'} size={22} color={c.accentText} />
           </View>
@@ -85,7 +86,7 @@ export default function HomeAveia({ onSwitchPet, onPetList, onMore, bottomPad })
 
       {/* Histórias */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 20, paddingBottom: 6 }}>
-        <View style={{ alignItems: 'center', marginRight: 14 }}>
+        <Tap onPress={h.newStory} label="Criar sua história" style={{ alignItems: 'center', marginRight: 14 }}>
           <View>
             <PetAvatar pet={t.pet} size={58} muted />
             <View style={{ position: 'absolute', right: -1, bottom: -1, width: 22, height: 22, borderRadius: 11, backgroundColor: c.accent, borderWidth: 2, borderColor: c.bg, alignItems: 'center', justifyContent: 'center' }}>
@@ -93,9 +94,9 @@ export default function HomeAveia({ onSwitchPet, onPetList, onMore, bottomPad })
             </View>
           </View>
           <Text style={{ color: c.text2, fontSize: 12, marginTop: 6 }}>Sua história</Text>
-        </View>
+        </Tap>
         {STORIES.map((k) => (
-          <Tap key={k} style={{ alignItems: 'center', marginRight: 14 }} label={`História ${PETS[k].article} ${PETS[k].name}`}>
+          <Tap key={k} onPress={() => h.story(k)} style={{ alignItems: 'center', marginRight: 14 }} label={`História ${PETS[k].article} ${PETS[k].name}`}>
             <PetAvatar pet={k} size={58} ringColor={c.accent} />
             <Text style={{ color: c.text, fontSize: 12, marginTop: 6 }}>{PETS[k].name}</Text>
           </Tap>
@@ -103,7 +104,7 @@ export default function HomeAveia({ onSwitchPet, onPetList, onMore, bottomPad })
       </ScrollView>
 
       {/* Feed */}
-      {FEED.map((post) => {
+      {ps.feed.map((post) => {
         if (post.type === 'suggestion') return <Suggestion key={post.id} post={post} />;
         if (post.type === 'sponsored') return <Sponsored key={post.id} post={post} onMore={onMore} />;
         const liked = !!ps.liked[post.id];
@@ -116,8 +117,8 @@ export default function HomeAveia({ onSwitchPet, onPetList, onMore, bottomPad })
             <PostMedia post={post} liked={liked} onLike={() => ps.toggleLike(post.id)} />
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingTop: 6 }}>
               <Action icon="paw" text={ps.paws(post)} active={liked} onPress={() => ps.toggleLike(post.id)} label="Dar patinha" />
-              <Action icon="comment" text={String(post.comments)} label="Comentar" />
-              <Action icon="share" label="Compartilhar" />
+              <Action icon="comment" text={String(post.comments)} onPress={() => h.post(post.id)} label="Comentar" />
+              <Action icon="share" onPress={() => h.share(post.id)} label="Compartilhar" />
               <View style={{ flex: 1 }} />
               <Action icon="bookmark" active={saved} onPress={() => ps.toggleSave(post.id)} label="Salvar" neutral />
             </View>
@@ -129,10 +130,10 @@ export default function HomeAveia({ onSwitchPet, onPetList, onMore, bottomPad })
   );
 }
 
-function RoundButton({ icon, label, dot }) {
+function RoundButton({ icon, label, dot, onPress }) {
   const t = useTheme();
   return (
-    <Tap label={label} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: t.c.surface, alignItems: 'center', justifyContent: 'center' }}>
+    <Tap onPress={onPress} label={label} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: t.c.surface, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name={icon} size={22} color={t.c.text} />
       {dot ? <View style={{ position: 'absolute', top: 11, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: t.c.accent, borderWidth: 1.5, borderColor: t.c.surface }} /> : null}
     </Tap>
@@ -152,6 +153,7 @@ function Action({ icon, text, active, onPress, label, neutral }) {
 
 function Sponsored({ post, onMore }) {
   const t = useTheme();
+  const h = useHome();
   const { c } = t;
   const partner = PARTNERS[post.partner];
   return (
@@ -172,7 +174,7 @@ function Sponsored({ post, onMore }) {
       <PostMedia post={post} liked onLike={() => {}} />
       <View style={{ padding: 14 }}>
         <Text style={{ color: c.text, fontSize: 15, lineHeight: 21 }}>{post.caption}</Text>
-        <Tap style={{ marginTop: 12, height: 46, borderRadius: 23, borderWidth: 1.5, borderColor: c.accentText, alignItems: 'center', justifyContent: 'center' }} label={post.cta}>
+        <Tap style={{ marginTop: 12, height: 46, borderRadius: 23, borderWidth: 1.5, borderColor: c.accentText, alignItems: 'center', justifyContent: 'center' }} onPress={() => h.partner(post.partner)} label={post.cta}>
           <Text style={{ color: c.accentText, fontSize: 15, fontWeight: '600' }}>{post.cta}</Text>
         </Tap>
       </View>
@@ -182,6 +184,7 @@ function Sponsored({ post, onMore }) {
 
 function Suggestion({ post }) {
   const t = useTheme();
+  const h = useHome();
   const { c } = t;
   const partner = PARTNERS[post.partner];
   return (
@@ -195,7 +198,7 @@ function Suggestion({ post }) {
           <Text style={{ color: c.text2, fontSize: 13, marginTop: 2 }}>Aberto agora · próximo horário {partner.nextSlot}</Text>
         </View>
       </View>
-      <Tap style={{ marginTop: 14, height: 46, borderRadius: 23, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' }} label="Agendar banho">
+      <Tap style={{ marginTop: 14, height: 46, borderRadius: 23, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' }} onPress={() => h.book(post.partner)} label="Agendar banho">
         <Text style={{ color: c.onAccent, fontSize: 15, fontWeight: '600' }}>Agendar banho</Text>
       </Tap>
     </View>

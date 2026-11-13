@@ -9,14 +9,14 @@ Fotos e vídeos dos bichos, comunidades por raça e bairro, e banho e tosa, vete
 ![Expo SDK 58](https://img.shields.io/badge/Expo-SDK%2058-26211C?style=flat-square&logo=expo&logoColor=white)
 ![React Native 0.88](https://img.shields.io/badge/React%20Native-0.88-D9923B?style=flat-square&logo=react&logoColor=white)
 ![iOS e Android](https://img.shields.io/badge/iOS%20%C2%B7%20Android-Expo%20Go-9A5B14?style=flat-square)
-![Protótipo](https://img.shields.io/badge/status-etapa%201%20de%208-6F665C?style=flat-square)
+![App completo](https://img.shields.io/badge/status-app%20naveg%C3%A1vel%20com%2064%20telas-6F665C?style=flat-square)
 
 </div>
 
 <br />
 
 <p align="center">
-  <img src="docs/inicio-claro.jpg" alt="A tela Início nas três direções visuais, no tema claro" width="900" />
+  <img src="docs/app-social.jpg" alt="Início, post com antes e depois e o perfil do Paçoca" width="900" />
 </p>
 
 ## O ciclo do netpet
@@ -67,41 +67,75 @@ O celular e o computador precisam estar na mesma rede Wi-Fi. Se não abrir (rede
 
 Quer só ver no navegador? `npx expo start --web`.
 
-## O que testar
+## O que tem no app
 
-A faixa escura no topo é do protótipo, não do app. Ela troca a direção visual e o tema claro ou escuro.
+Todas as abas e fluxos funcionam, com dados de exemplo guardados no próprio app. Nada vai para um servidor: ao fechar, tudo volta ao começo.
 
-- **Trocar de pet:** toque no avatar do topo para alternar entre Paçoca, Luna e Amora. Segure para abrir a lista.
-- **Semana:** toque nos dias para ver o compromisso de cada um, e recolha a faixa pela setinha.
-- **Patinha:** dois toques em qualquer foto.
-- **Carrossel e vídeo:** deslize as fotos da Luna. O post da Amora mostra o formato de vídeo curto.
-- **Criar:** o botão **+** abre a folha com Postar, Agendar e Registrar cuidado.
-- **Denunciar e bloquear:** pelo **⋯** de qualquer post.
+| Área | Telas |
+| --- | --- |
+| **Entrada** | Abertura, boas-vindas em três cartões, login, criar o pet com uma pergunta por tela, permissões na hora certa e interesses |
+| **Início e social** | Feed, histórias, post com comentários e patinhas, criar post, registrar cuidado, notificações, busca e o assistente netpet |
+| **Serviços** | Vitrine por categoria, resultados com filtros e mapa, página do parceiro, agendamento, resumo e pagamento (Pix, cartão ou no local), confirmação, meus agendamentos, atendimento ao vivo, avaliação e cupons |
+| **Matilhas** | Canais, conversa, fio de respostas, mensagens diretas, sobre a matilha, descobrir, criar matilha e o alerta de pet perdido |
+| **Pet** | Perfil, editar, família, carteirinha (vacinas, peso, remédios e histórico), agenda de cuidados, crescimento, sequência de passeios, retrospectiva, cartão para compartilhar e plaquinha com QR code |
+| **Geral** | Ajustes (conta, aparência, notificações, privacidade, pagamentos, endereços, bloqueados, ajuda), excluir conta, netpet+ e estados vazios, de erro, sem internet e carregando |
+| **Modo parceiro** | Fila do dia com etapas ao vivo, agenda por profissional, pedidos (aceitar, recusar ou sugerir outro horário), mensagens, catálogo, clientes, avaliações com resposta, financeiro, planos, destaque na busca, cupons, verificação e equipe |
 
-## Três direções para o Início
+<p align="center">
+  <img src="docs/app-servicos.jpg" alt="Serviços, página do parceiro e atendimento ao vivo" width="900" />
+</p>
 
-A etapa 1 é a mesma tela em três caminhos visuais, para escolher um antes de construir o resto.
+<p align="center">
+  <img src="docs/app-matilhas.jpg" alt="Matilhas, conversa no canal #dicas e a carteirinha do Paçoca" width="900" />
+</p>
 
-| | Direção | A ideia |
+### Roteiro para testar
+
+1. **Entrada:** passe pelas boas-vindas, entre com qualquer opção e crie um pet.
+2. **Agendar:** em Serviços, abra o Pet Shop Bicho Bom, toque em Agendar, escolha um horário e pague com Pix.
+3. **Ao vivo:** no Início, toque no cartão de hoje para acompanhar o banho do Paçoca. Ao terminar, a foto do depois vira post.
+4. **Postar:** o botão **+** abre Postar, Agendar, Registrar cuidado e Avisar pet perdido.
+5. **Patinha:** dois toques em qualquer foto. O **⋯** de cada post tem salvar, denunciar e bloquear.
+6. **Trocar de pet:** toque no avatar do topo do Início. Segure para ver a lista.
+7. **Estilo e tema:** em Ajustes, *Aparência*, escolha entre as três direções e entre claro, escuro ou o tema do celular.
+8. **Modo parceiro:** em Ajustes, *Modo parceiro*. Inicie um atendimento, avance as etapas e aceite um pedido. Para voltar, *Negócio*, *Voltar para o modo tutor*.
+9. **Atalho:** em Ajustes, *Mapa de telas* abre qualquer tela direto.
+
+## O modo parceiro
+
+O mesmo app, do lado do Pet Shop Bicho Bom: cada etapa que o parceiro marca chega na hora para o tutor.
+
+<p align="center">
+  <img src="docs/app-parceiro.jpg" alt="Modo parceiro: fila do dia, agenda por profissional e financeiro" width="900" />
+</p>
+
+## Como o netpet ganha dinheiro
+
+- **Taxa por agendamento pago no app:** 12% no plano grátis do parceiro e 8% no Parceiro Pro. Pagamento no local não tem taxa.
+- **Parceiro Pro:** R$ 89 por mês, com agenda por profissional, lembretes automáticos de retorno, relatórios e cupons.
+- **Destaque na busca:** o parceiro paga por dia para aparecer primeiro, sempre com o rótulo *Patrocinado*.
+- **netpet+ para tutores:** R$ 14,90 por mês ou R$ 149 por ano, sem taxa de serviço, carteirinha em PDF e família ilimitada.
+- **Plaquinha de metal com QR code:** R$ 39,90.
+- **Sempre grátis:** a carteirinha básica e o alerta de pet perdido.
+
+## Três estilos para escolher
+
+O app inteiro funciona nos três estilos. Troque em Ajustes, *Aparência*.
+
+| | Estilo | A ideia |
 | --- | --- | --- |
 | **1** | **Aveia** | Calma e arejada. Cartões brancos sobre o fundo aveia, separadores finíssimos e o caramelo só no essencial. Títulos em Nunito. |
-| **2** | **Caramelo** | Quente e com mais marca. Faixa tingida no topo, dias em pílulas, o cartão "Hoje" preenchido de caramelo e o parceiro em destaque nos posts. Títulos em Fredoka. |
-| **3** | **Cor do pet** | A foto manda. Neutros de pedra, o app inteiro no tom do pet ativo e fotos de ponta a ponta, com as ações sobre a imagem. Títulos em Baloo 2. |
+| **2** | **Caramelo** | Quente e com mais marca. Faixa tingida no topo, cartão "Hoje" preenchido de caramelo e barra inferior flutuante. Títulos em Fredoka. |
+| **3** | **Cor do pet** | A foto manda. Neutros de pedra e o app inteiro no tom do pet ativo, que muda quando você troca de pet. Títulos em Baloo 2. |
 
 <p align="center">
-  <img src="docs/feed.jpg" alt="O feed nas três direções: antes e depois, post patrocinado e sugestão de parceiro" width="900" />
+  <img src="docs/inicio-claro.jpg" alt="O Início nos três estilos, no tema claro" width="900" />
 </p>
 
-Na direção 3, cada pet tem uma cor tirada da foto dele, e o app muda de tom quando você troca de pet:
+E os três no tema escuro:
 
 <p align="center">
-  <img src="docs/cor-do-pet.jpg" alt="A direção Cor do pet com a Luna em verde, a Amora em rosa e a folha Criar" width="900" />
-</p>
-
-E as três no tema escuro:
-
-<p align="center">
-  <img src="docs/inicio-escuro.jpg" alt="A tela Início nas três direções, no tema escuro" width="900" />
+  <img src="docs/inicio-escuro.jpg" alt="O Início nos três estilos, no tema escuro" width="900" />
 </p>
 
 ## Identidade
@@ -124,32 +158,42 @@ E as três no tema escuro:
 ## Estrutura
 
 ```
-App.js              moldura do protótipo, barra inferior e folhas
+App.js                tema, abas, folhas e o registro de todas as telas
 src/
-  theme.js          tokens de cor, fonte e raio das três direções
-  icons.js          conjunto de ícones em SVG
-  data.js           conteúdo de exemplo: pets, parceiros, agenda e posts
-  ui.js             peças comuns: toque, avatar, marca de parceiro, mídia do post, folha
-  home/
-    HomeAveia.js    direção 1
-    HomeCaramelo.js direção 2
-    HomePet.js      direção 3
+  theme.js            tokens de cor, fonte e raio dos três estilos
+  store.js            estado do app em memória: posts, agendamentos, mensagens, ajustes
+  nav.js              navegação leve: uma aba ativa e uma pilha de telas por cima
+  kit.js              componentes: tela, botão, cartão, lista, campo, chips, estados
+  ui.js               toque, avatar do pet, marca do parceiro, mídia do post, folha
+  icons.js            conjunto de ícones em SVG
+  data.js             conteúdo de exemplo: pets, parceiros, agenda, posts, matilhas, saúde
+  home/               o Início em cada um dos três estilos
+  screens/
+    entrada.js        abertura, login, criar pet, permissões e interesses
+    social.js         post, história, criar post, cuidado, notificações e busca
+    servicos.js       vitrine, parceiro, agendamento, pagamento, ao vivo e avaliação
+    matilhas.js       canais, conversas, mensagens e pet perdido
+    pet.js            perfil, carteirinha, cuidados, crescimento e plaquinha
+    geral.js          assistente, ajustes, netpet+, estados e mapa de telas
+    parceiro.js       o modo parceiro inteiro
 assets/
-  photos/           fotos de exemplo
-  fonts/            Nunito, Fredoka e Baloo 2
-docs/               logo e capturas deste README
+  photos/             fotos de exemplo
+  fonts/              Nunito, Fredoka e Baloo 2
+scripts/
+  publish-snack.py    publica uma cópia nova no Expo Snack
+docs/                 logo e capturas deste README
 ```
 
-## Próximas etapas
+A navegação é própria, e não o Expo Router, para o app rodar igual no Expo Snack e no Expo Go sem passo de build.
 
-- [x] **1. Fundação:** três direções visuais para o Início
-- [ ] **2. Sistema de design:** tokens, componentes e barra inferior da direção escolhida
-- [ ] **3. Núcleo social:** entrada, criar pet, Início, post, Criar e perfil do pet
-- [ ] **4. Serviços:** vitrine, parceiro, agendamento, pagamento, atendimento ao vivo e avaliação
-- [ ] **5. Matilhas e mensagens,** com o alerta de pet perdido
-- [ ] **6. Pet:** carteirinha, agenda de cuidados, crescimento, sequência, retrospectiva e plaquinha
-- [ ] **7. Modo parceiro**
-- [ ] **8. Fechamento:** monetização, ajustes, estados vazios e de erro e o mapa de navegação
+## Próximos passos
+
+- [x] Três estilos visuais e sistema de design
+- [x] Entrada, Início, social, serviços, matilhas, pet, ajustes e modo parceiro
+- [ ] Back-end: contas, fotos, agendamentos e mensagens de verdade
+- [ ] Pagamentos com Pix e cartão por uma processadora
+- [ ] Notificações push e localização para o alerta de pet perdido
+- [ ] Publicar nas lojas com EAS Build
 
 ## Créditos
 
