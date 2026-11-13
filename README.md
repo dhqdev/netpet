@@ -45,7 +45,7 @@ O app liga as duas metades do produto, a rede social e os serviços, num ciclo s
   <img src="docs/qrcode-expo-go.png" alt="QR code para abrir o netpet no Expo Go" width="200" />
 </p>
 
-O QR code abre o [Snack do netpet](https://snack.expo.dev/XNEDulPq6IqXK8qEvc7na), uma cópia do app que não se atualiza sozinha. Para publicar uma cópia nova depois de mudar o código, rode `python3 scripts/publish-snack.py` e troque o link e o QR code acima.
+O QR code abre o [Snack do netpet](https://snack.expo.dev/8Hu8QHw06ya5M72c3thbr), uma cópia do app que não se atualiza sozinha. Para publicar uma cópia nova depois de mudar o código, rode `python3 scripts/publish-snack.py` e troque o link e o QR code acima.
 
 **Rodando do código:**
 
