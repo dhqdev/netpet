@@ -13,7 +13,7 @@
     "start": "node --env-file-if-exists=.env src/index.js",
     "db:migrar": "node --env-file-if-exists=.env db/migrar.js",
     "db:exemplo": "node --env-file-if-exists=.env db/exemplo.js",
-    "test": "node --env-file-if-exists=.env --test --test-concurrency=1 test/"
+    "test": "node --env-file-if-exists=.env --test --test-concurrency=1 test/*.test.js"
   },
   "dependencies": {
     "@fastify/cors": "^11.4.3",
