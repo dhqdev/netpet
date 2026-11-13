@@ -35,6 +35,8 @@ export default function HomeCaramelo({ onSwitchPet, onPetList, onMore, bottomPad
           <RingButton icon="bell" label="Notificações" dot onPress={h.notifications} />
           <View style={{ width: 8 }} />
           <RingButton icon="chat" label="Mensagens" onPress={h.dms} />
+          <View style={{ width: 8 }} />
+          <RingButton icon="plus" label="Criar: postar, agendar ou registrar cuidado" onPress={h.create} />
         </View>
 
         <Tap onPress={() => setOpen(!open)} scale={0.99} hitSlop={0} label={open ? 'Recolher a semana' : 'Abrir a semana'}

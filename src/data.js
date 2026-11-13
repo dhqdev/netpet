@@ -580,7 +580,6 @@ export const PLANS = [
 export const TABS = [
   { key: 'inicio', label: 'Início', icon: 'home' },
   { key: 'servicos', label: 'Serviços', icon: 'store' },
-  { key: 'criar', label: 'Criar', icon: 'plus' },
   { key: 'matilhas', label: 'Matilhas', icon: 'users' },
   { key: 'pet', label: 'Pet', icon: 'paw' },
 ];

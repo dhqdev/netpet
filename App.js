@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Platform, StyleSheet, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Easing, Platform, StyleSheet, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import { PETS, MY_PETS, TABS, PARTNER_TABS, ME } from './src/data';
 import { StoreProvider, useStore } from './src/store';
 import { NavProvider, StackView, useNav } from './src/nav';
 import { InsetsContext, Toast } from './src/kit';
+import { Glass, floatShadow, spring, haptic, ND } from './src/motion';
 
 import HomeAveia from './src/home/HomeAveia';
 import HomeCaramelo from './src/home/HomeCaramelo';
@@ -130,8 +131,7 @@ function Shell() {
   const t = React.useContext(ThemeContext);
   const ins = React.useContext(InsetsContext);
   const partner = s.mode === 'parceiro';
-  const floating = t.key === 'caramelo';
-  const barH = (floating ? 64 + 10 : 58) + Math.max(ins.bottom, floating ? 10 : 6);
+  const barH = 64 + Math.max(ins.bottom, 12);
 
   if (Platform.OS === 'web' && typeof window !== 'undefined') window.__netpet = { nav, store: s };
   const nextPet = () => s.setPetKey(MY_PETS[(MY_PETS.indexOf(s.petKey) + 1) % MY_PETS.length]);
@@ -147,7 +147,7 @@ function Shell() {
     const Home = HOMES[s.direction];
     root = <Home key={s.direction} onSwitchPet={nextPet} onPetList={() => s.openSheet('pets')} onMore={() => s.openSheet('more', { sponsored: true })} bottomPad={barH + 28} />;
   }
-  const topBg = !partner && floating && nav.tab === 'inicio' ? t.c.surface2 : t.c.bg;
+  const topBg = !partner && t.key === 'caramelo' && nav.tab === 'inicio' ? t.c.surface2 : t.c.bg;
   const fresh = s.requests.filter((r) => !r.answer).length;
 
   return (
@@ -156,7 +156,7 @@ function Shell() {
         screens={SCREENS}
         root={(
           <View style={{ flex: 1, backgroundColor: topBg, paddingTop: ins.top }}>
-            <View style={{ flex: 1, backgroundColor: t.c.bg }}>{root}</View>
+            <TabFade key={`${s.mode}-${nav.tab}`}>{root}</TabFade>
             <TabBar tabs={partner ? PARTNER_TABS : TABS} badges={partner ? { pedidos: fresh } : {}} />
           </View>
         )}
@@ -166,74 +166,84 @@ function Shell() {
   );
 }
 
+// A aba nova entra clareando e crescendo de leve, sem deslizar.
+function TabFade({ children }) {
+  const t = React.useContext(ThemeContext);
+  const v = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(v, { toValue: 1, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: ND }).start();
+  }, []);
+  return (
+    <Animated.View style={{ flex: 1, backgroundColor: t.c.bg, opacity: v, transform: [{ scale: v.interpolate({ inputRange: [0, 1], outputRange: [0.985, 1] }) }] }}>
+      {children}
+    </Animated.View>
+  );
+}
+
+// Menu inferior suspenso, em vidro. Uma pílula desliza em mola até a aba ativa.
 function TabBar({ tabs, badges }) {
   const t = React.useContext(ThemeContext);
   const ins = React.useContext(InsetsContext);
-  const s = useStore();
   const nav = useNav();
   const { c } = t;
-  const floating = t.key === 'caramelo';
   const labels = t.key !== 'pet';
   const activeColor = t.toneText;
+  const [w, setW] = useState(0);
+  const idx = Math.max(0, tabs.findIndex((it) => it.key === nav.tab));
+  const x = useRef(new Animated.Value(idx)).current;
+  useEffect(() => { spring(x, idx, { damping: 20, stiffness: 230 }); }, [idx]);
+  const pad = 6;
+  const cell = w ? (w - pad * 2) / tabs.length : 0;
 
-  const items = tabs.map((it) => {
-    if (it.key === 'criar') {
-      const size = 54;
-      return (
-        <View key={it.key} style={{ flex: 1, alignItems: 'center' }}>
-          <Tap onPress={() => s.openSheet('create')} label="Criar: postar, agendar ou registrar cuidado" scale={0.94}
-            style={{
-              width: size, height: size, borderRadius: floating ? 19 : size / 2, marginTop: floating ? -16 : -20,
-              backgroundColor: t.tone, alignItems: 'center', justifyContent: 'center',
-              borderWidth: 4, borderColor: floating ? c.bg : c.surface,
-            }}>
-            <Icon name="plus" size={24} color={t.onTone} stroke={2.1} />
-          </Tap>
-        </View>
-      );
-    }
-    const active = nav.tab === it.key;
-    const badge = badges[it.key];
-    return (
-      <Tap key={it.key} onPress={() => (active ? nav.popToRoot() : nav.setTab(it.key))} outerStyle={{ flex: 1 }} hitSlop={0} label={it.label} scale={0.94}
-        style={{ alignItems: 'center', justifyContent: 'center', height: floating ? 64 : 58 }}>
-        <View>
-          {it.key === 'pet' ? (
-            <View style={{ width: 28, height: 28, alignItems: 'center', justifyContent: 'center' }}>
-              <PetAvatar pet={t.pet} size={active ? 24 : 26} ring={active ? 2 : 0} gap={active ? 1 : 0} ringColor={activeColor} />
-            </View>
-          ) : (
-            <Icon name={it.icon} size={24} color={active ? activeColor : c.text2} filled={active && t.icon.activeFill} />
-          )}
-          {badge ? (
-            <View style={{ position: 'absolute', top: -4, right: -9, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: t.tone, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4, borderWidth: 1.5, borderColor: c.surface }}>
-              <Text style={{ color: t.onTone, fontSize: 10.5, fontWeight: '700' }}>{badge}</Text>
-            </View>
-          ) : null}
-        </View>
-        {labels ? (
-          <Text allowFontScaling={false} style={{ fontSize: 11, marginTop: 3, color: active ? activeColor : c.text2, fontWeight: active ? '600' : '400' }}>{it.label}</Text>
-        ) : (
-          <View style={{ width: 5, height: 5, borderRadius: 3, marginTop: 5, backgroundColor: active ? activeColor : 'transparent' }} />
-        )}
-      </Tap>
-    );
-  });
-
-  if (floating) {
-    return (
-      <View pointerEvents="box-none" style={{ position: 'absolute', left: 14, right: 14, bottom: Math.max(ins.bottom, 10) }}>
-        <View style={[{ flexDirection: 'row', height: 64, borderRadius: 32, backgroundColor: c.surface, paddingHorizontal: 6 }, styles.float, { shadowOpacity: t.dark ? 0.5 : 0.16 }]}>
-          {items}
-        </View>
-      </View>
-    );
-  }
   return (
-    <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: c.surface, paddingBottom: Math.max(ins.bottom, 6), borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.line }}>
-      <View style={{ flexDirection: 'row', paddingHorizontal: 6 }}>{items}</View>
+    <View pointerEvents="box-none" style={{ position: 'absolute', left: 16, right: 16, bottom: Math.max(ins.bottom, 12) }}>
+      <View style={[{ borderRadius: 32 }, floatShadow(t.dark)]}>
+        <Glass radius={32} interactive style={{ height: 64 }}>
+          <View style={{ flex: 1, flexDirection: 'row', paddingHorizontal: pad }} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
+            {cell ? (
+              <Animated.View pointerEvents="none" style={{
+                position: 'absolute', top: 6, bottom: 6, left: pad, width: cell, borderRadius: 26,
+                backgroundColor: alphaHex(t.tone, t.dark ? 0.24 : 0.16),
+                transform: [{ translateX: Animated.multiply(x, cell) }],
+              }} />
+            ) : null}
+            {tabs.map((it) => {
+              const active = nav.tab === it.key;
+              const badge = badges[it.key];
+              return (
+                <Tap key={it.key} onPress={() => { haptic.select(); if (active) nav.popToRoot(); else nav.setTab(it.key); }}
+                  outerStyle={{ flex: 1 }} hitSlop={0} label={it.label} scale={0.9}
+                  style={{ alignItems: 'center', justifyContent: 'center', height: 64 }}>
+                  <View>
+                    {it.key === 'pet' ? (
+                      <View style={{ width: 28, height: 28, alignItems: 'center', justifyContent: 'center' }}>
+                        <PetAvatar pet={t.pet} size={active ? 22 : 25} ring={active ? 2 : 0} gap={active ? 1 : 0} ringColor={activeColor} />
+                      </View>
+                    ) : (
+                      <Icon name={it.icon} size={24} color={active ? activeColor : c.text2} filled={active && t.icon.activeFill} />
+                    )}
+                    {badge ? (
+                      <View style={{ position: 'absolute', top: -4, right: -9, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: t.tone, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 }}>
+                        <Text style={{ color: t.onTone, fontSize: 10.5, fontWeight: '700' }}>{badge}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                  {labels ? (
+                    <Text allowFontScaling={false} numberOfLines={1} style={{ fontSize: 11, marginTop: 3, color: active ? activeColor : c.text2, fontWeight: active ? '600' : '500' }}>{it.label}</Text>
+                  ) : null}
+                </Tap>
+              );
+            })}
+          </View>
+        </Glass>
+      </View>
     </View>
   );
+}
+
+function alphaHex(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
 }
 
 // Folhas que sobem de baixo: criar, trocar de pet, mais opções, compartilhar, denunciar e endereço.
@@ -319,6 +329,3 @@ function Sheets() {
   );
 }
 
-const styles = StyleSheet.create({
-  float: { shadowColor: '#000', shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 10 },
-});

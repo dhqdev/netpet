@@ -39,6 +39,7 @@ export default function HomePet({ onSwitchPet, onPetList, onMore, bottomPad }) {
         </View>
         <PlainButton icon="bell" label="Notificações" dot onPress={h.notifications} />
         <PlainButton icon="chat" label="Mensagens" onPress={h.dms} />
+          <PlainButton icon="plus" label="Criar: postar, agendar ou registrar cuidado" onPress={h.create} />
       </View>
 
       {/* Semana em linha, sem cartão */}

@@ -31,6 +31,10 @@ PRELOADED = {
 }
 # Precisam ser empacotados pelo snackager.
 BUNDLED = {
+    'expo-blur': '~58.0.6',
+    'expo-glass-effect': '~58.0.5',
+    'expo-haptics': '~58.0.8',
+    'expo-image-picker': '~58.0.10',
     'expo-linear-gradient': '~58.0.4',
     'expo-status-bar': '~58.0.5',
     'react-native-svg': '15.15.5',
@@ -80,7 +84,7 @@ def main():
         'manifest': {
             'sdkVersion': SDK,
             'name': 'netpet',
-            'description': 'Protótipo do netpet: a tela Início em três direções visuais.',
+            'description': 'netpet: rede social de pets com agendamento em parceiros. App de exemplo.',
             'dependencies': {name: d['version'] for name, d in deps.items()},
         },
         'code': files,

@@ -27,6 +27,7 @@ export function useHome() {
   return {
     notifications: () => nav.push('Notifications'),
     dms: () => nav.push('Dms'),
+    create: () => s.openSheet('create'),
     story: (pet) => nav.push('Story', { pet }),
     newStory: () => nav.push('NewPost', {}),
     post: (id) => nav.push('Post', { id }),

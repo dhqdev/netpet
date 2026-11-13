@@ -1,26 +1,37 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Image, PanResponder, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Icon } from './icons';
+import { notePress } from './nav';
+import { Glass, spring, haptic, floatShadow, ND } from './motion';
 import { photos } from './photos';
 import { useTheme, alpha } from './theme';
 import { PETS, PARTNERS } from './data';
 
-export const ND = Platform.OS !== 'web';
+export { ND };
 const EASE = Easing.out(Easing.cubic);
 
-// Toque que encolhe 3% e volta, em 140 ms. Nada quica.
-export function Tap({ onPress, onLongPress, style, outerStyle, children, scale = 0.97, label, hitSlop = 6, disabled }) {
+// Toque que encolhe 3% e volta em mola. Guarda onde foi o toque, para a próxima tela
+// poder crescer a partir dele.
+export function Tap({ onPress, onLongPress, style, outerStyle, children, scale = 0.97, label, hitSlop = 6, disabled, haptics }) {
   const v = useRef(new Animated.Value(1)).current;
-  const to = (x) => Animated.timing(v, { toValue: x, duration: 140, easing: EASE, useNativeDriver: ND }).start();
+  const ref = useRef(null);
+  const down = () => {
+    Animated.timing(v, { toValue: scale, duration: 110, easing: EASE, useNativeDriver: ND }).start();
+    if (ref.current && ref.current.measureInWindow) {
+      ref.current.measureInWindow((x, y, w, h) => notePress({ x, y, w, h }));
+    }
+  };
+  const up = () => spring(v, 1, { damping: 18, stiffness: 320 });
   return (
     <Pressable
+      ref={ref}
       accessibilityRole="button"
       accessibilityLabel={label}
       disabled={disabled}
       hitSlop={hitSlop}
-      onPressIn={() => to(scale)}
-      onPressOut={() => to(1)}
-      onPress={onPress}
+      onPressIn={down}
+      onPressOut={up}
+      onPress={onPress ? (e) => { if (haptics) haptic[haptics](); onPress(e); } : undefined}
       onLongPress={onLongPress}
       delayLongPress={320}
       style={outerStyle}
@@ -30,8 +41,10 @@ export function Tap({ onPress, onLongPress, style, outerStyle, children, scale =
   );
 }
 
+// Foto de exemplo (pelo nome) ou foto escolhida pelo usuário (pelo endereço).
 export function Photo({ name, style }) {
-  return <Image source={photos[name]} style={[{ backgroundColor: 'rgba(128,120,110,0.18)' }, style]} resizeMode="cover" />;
+  const source = typeof name === 'string' && /^(file|content|https?|data|blob|ph|assets-library):/.test(name) ? { uri: name } : photos[name];
+  return <Image source={source} style={[{ backgroundColor: 'rgba(128,120,110,0.18)' }, style]} resizeMode="cover" />;
 }
 
 // Avatar de pet: sempre em círculo, com anel na cor do pet.
@@ -43,7 +56,13 @@ export function PetAvatar({ pet, size = 40, ring = 2, gap = 2, ringColor, muted,
   return (
     <View style={{ width: outer, height: outer }}>
       <View style={{ width: outer, height: outer, borderRadius: outer / 2, borderWidth: ring, borderColor: color, alignItems: 'center', justifyContent: 'center' }}>
-        <Photo name={p.photo} style={{ width: size, height: size, borderRadius: size / 2 }} />
+        {p.photo ? (
+          <Photo name={p.photo} style={{ width: size, height: size, borderRadius: size / 2 }} />
+        ) : (
+          <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: p.color, alignItems: 'center', justifyContent: 'center' }}>
+            <Text allowFontScaling={false} style={{ color: p.onColor || '#FFFFFF', fontSize: size * 0.42, fontWeight: '700' }}>{(p.name || '?').slice(0, 1)}</Text>
+          </View>
+        )}
       </View>
       {status ? (
         <View style={{ position: 'absolute', right: 0, bottom: 0, width: 14, height: 14, borderRadius: 7, backgroundColor: '#4FA36C', borderWidth: 2, borderColor: t.c.bg }} />
@@ -82,6 +101,7 @@ export function PostMedia({ post, liked, onLike, radius = 0, children }) {
     const now = Date.now();
     if (now - last.current < 280) {
       if (!liked) onLike();
+      haptic.light();
       stamp.setValue(0);
       Animated.timing(stamp, { toValue: 1, duration: 620, easing: Easing.linear, useNativeDriver: ND }).start();
     }
@@ -175,36 +195,54 @@ export function PostMedia({ post, liked, onLike, radius = 0, children }) {
   );
 }
 
-// Folha inferior. Fica dentro da moldura do app, sobe em 220 ms.
+// Folha inferior em vidro, solta das bordas como no iOS. Sobe em mola e fecha arrastando para baixo.
 export function Sheet({ visible, onClose, title, children, bottomInset = 0 }) {
   const t = useTheme();
   const v = useRef(new Animated.Value(0)).current;
+  const drag = useRef(new Animated.Value(0)).current;
   const [shown, setShown] = useState(visible);
   useEffect(() => {
-    if (visible) setShown(true);
-    Animated.timing(v, { toValue: visible ? 1 : 0, duration: visible ? 220 : 160, easing: EASE, useNativeDriver: ND }).start(({ finished }) => {
-      if (finished && !visible) setShown(false);
-    });
+    if (visible) {
+      setShown(true);
+      drag.setValue(0);
+      spring(v, 1, { damping: 24, stiffness: 240 });
+    } else {
+      Animated.timing(v, { toValue: 0, duration: 180, easing: EASE, useNativeDriver: ND }).start(({ finished }) => {
+        if (finished) setShown(false);
+      });
+    }
   }, [visible]);
+  const pan = useRef(PanResponder.create({
+    onMoveShouldSetPanResponder: (e, g) => g.dy > 6 && Math.abs(g.dy) > Math.abs(g.dx),
+    onPanResponderMove: (e, g) => drag.setValue(Math.max(0, g.dy)),
+    onPanResponderRelease: (e, g) => {
+      if (g.dy > 90 || g.vy > 0.8) onClose && onClose();
+      else spring(drag, 0);
+    },
+  })).current;
   if (!shown) return null;
   return (
     <View style={StyleSheet.absoluteFill} accessibilityViewIsModal>
-      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: t.c.overlay, opacity: v }]}>
+      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: t.dark ? 'rgba(0,0,0,0.5)' : 'rgba(30,24,18,0.28)', opacity: v }]}>
         <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityLabel="Fechar" />
       </Animated.View>
       <Animated.View
-        style={{
-          position: 'absolute', left: 0, right: 0, bottom: 0,
-          backgroundColor: t.c.surface, borderTopLeftRadius: 26, borderTopRightRadius: 26,
-          paddingBottom: bottomInset + 18, paddingTop: 10,
-          transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [420, 0] }) }],
-        }}
+        {...pan.panHandlers}
+        style={[{
+          position: 'absolute', left: 8, right: 8, bottom: Math.max(bottomInset, 8),
+          transform: [
+            { translateY: Animated.add(v.interpolate({ inputRange: [0, 1], outputRange: [480, 0] }), drag) },
+            { scale: v.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1] }) },
+          ],
+        }, floatShadow(t.dark)]}
       >
-        <View style={{ alignSelf: 'center', width: 38, height: 4, borderRadius: 2, backgroundColor: t.c.line, marginBottom: 14 }} />
-        {title ? (
-          <Text style={{ fontFamily: t.fonts.title, fontSize: 22, color: t.c.text, paddingHorizontal: 22, marginBottom: 8 }}>{title}</Text>
-        ) : null}
-        {children}
+        <Glass radius={34} style={{ paddingBottom: 14, paddingTop: 10 }}>
+          <View style={{ alignSelf: 'center', width: 38, height: 5, borderRadius: 3, backgroundColor: t.dark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.18)', marginBottom: 12 }} />
+          {title ? (
+            <Text style={{ fontFamily: t.fonts.title, fontSize: 22, color: t.c.text, paddingHorizontal: 22, marginBottom: 8 }}>{title}</Text>
+          ) : null}
+          {children}
+        </Glass>
       </Animated.View>
     </View>
   );

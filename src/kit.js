@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { Animated, Easing, ScrollView, StyleSheet, Switch, Text, TextInput, View, KeyboardAvoidingView, Platform } from 'react-native';
 import { Icon } from './icons';
 import { Tap, PetAvatar, PartnerMark, Photo, ND } from './ui';
+import { Glass, Appear, AppearContext, useAppearDelay, haptic, floatShadow } from './motion';
 import { useTheme, alpha } from './theme';
 import { useNav } from './nav';
 import { PETS, PARTNERS } from './data';
@@ -40,18 +41,37 @@ export function RoundButton({ icon, onPress, label, dot, plain, size = 44, color
 }
 
 // Cabeçalho de tela empilhada: voltar, título curto no centro e uma ação à direita.
-export function NavHeader({ title, right, onBack, transparent, light }) {
+// Com `scrollY`, fica por cima do conteúdo e vira vidro quando a tela rola;
+// com `big`, o título só aparece aqui depois que o título grande sai de vista.
+export function NavHeader({ title, right, onBack, transparent, light, scrollY, big }) {
   const t = useTheme();
   const nav = useNav();
   const ins = useInsets();
   const col = light ? '#FFFFFF' : t.c.text;
-  // A área segura do topo fica dentro do cabeçalho, para capas de foto irem até a borda.
+  const glassOpacity = scrollY ? scrollY.interpolate({ inputRange: [0, 28], outputRange: [0, 1], extrapolate: 'clamp' }) : 0;
+  const titleOpacity = scrollY && big ? scrollY.interpolate({ inputRange: [36, 66], outputRange: [0, 1], extrapolate: 'clamp' }) : 1;
+  const floating = !!scrollY;
   return (
-    <View style={{ height: 52 + ins.top, paddingTop: ins.top, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, backgroundColor: transparent ? 'transparent' : t.c.bg }}>
-      <Tap onPress={onBack || nav.back} label="Voltar" style={{ width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: light ? 'rgba(20,16,12,0.4)' : 'transparent' }}>
-        <Icon name="back" size={23} color={col} />
-      </Tap>
-      <Text numberOfLines={1} style={{ flex: 1, textAlign: 'center', fontSize: 16, fontWeight: '600', color: col, marginHorizontal: 6 }}>{title || ''}</Text>
+    <View style={[{ height: 52 + ins.top, paddingTop: ins.top, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, backgroundColor: transparent || floating ? 'transparent' : t.c.bg },
+      floating ? { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 5 } : null]}>
+      {floating ? (
+        <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: glassOpacity }]}>
+          <Glass radius={0} border={false} style={StyleSheet.absoluteFill} />
+          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: StyleSheet.hairlineWidth, backgroundColor: t.c.line }} />
+        </Animated.View>
+      ) : null}
+      {light ? (
+        <Tap onPress={onBack || nav.back} label="Voltar" style={{ width: 44, height: 44 }}>
+          <Glass radius={22} strength="clear" tint="rgba(20,16,12,0.42)" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="back" size={23} color="#FFFFFF" />
+          </Glass>
+        </Tap>
+      ) : (
+        <Tap onPress={onBack || nav.back} label="Voltar" style={{ width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name="back" size={23} color={col} />
+        </Tap>
+      )}
+      <Animated.Text numberOfLines={1} style={{ flex: 1, textAlign: 'center', fontSize: 16, fontWeight: '600', color: col, marginHorizontal: 6, opacity: titleOpacity }}>{title || ''}</Animated.Text>
       <View style={{ minWidth: 44, alignItems: 'flex-end' }}>{right || null}</View>
     </View>
   );
@@ -70,38 +90,51 @@ export function BigTitle({ title, sub, right, style }) {
   );
 }
 
-// Tela padrão. `header` = NavHeader; `big` = título grande; `footer` fica fixo embaixo.
-export function Screen({ title, big, sub, right, children, footer, scroll = true, pad = true, header = true, keyboard, bottomPad = 0, contentStyle, refreshKey }) {
+// Tela padrão. `header` = NavHeader; `big` = título grande que encolhe para o cabeçalho ao rolar;
+// `footer` fica fixo embaixo, em vidro, com o conteúdo passando por trás.
+export function Screen({ title, big, sub, right, children, footer, scroll = true, pad = true, header = true, keyboard, bottomPad = 0, contentStyle }) {
   const t = useTheme();
   const ins = useInsets();
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [footH, setFootH] = useState(footer ? 90 : 0);
+  const appear = useRef({ n: 0 }).current;
+  const headH = 52 + ins.top;
   const body = scroll ? (
-    <ScrollView
+    <Animated.ScrollView
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={[{ paddingBottom: (footer ? 24 : ins.bottom + 32) + bottomPad }, pad ? { paddingHorizontal: 16 } : null, contentStyle]}
+      scrollEventThrottle={16}
+      onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: ND })}
+      contentContainerStyle={[{ paddingTop: header ? headH : 0, paddingBottom: (footer ? footH + 20 : ins.bottom + 32) + bottomPad }, pad ? { paddingHorizontal: 16 } : null, contentStyle]}
     >
-      {big ? <BigTitle title={big} sub={sub} style={pad ? { paddingHorizontal: 4 } : null} /> : null}
-      {children}
-    </ScrollView>
+      <AppearContext.Provider value={appear}>
+        {big ? <Appear><BigTitle title={big} sub={sub} style={pad ? { paddingHorizontal: 4 } : null} /></Appear> : null}
+        <Appear delay={big ? 50 : 0} from={8}>{children}</Appear>
+      </AppearContext.Provider>
+    </Animated.ScrollView>
   ) : (
-    <View style={[{ flex: 1 }, contentStyle]}>{children}</View>
+    <View style={[{ flex: 1, paddingTop: header ? headH : 0, paddingBottom: footer ? footH : 0 }, contentStyle]}>{children}</View>
   );
   const Wrap = keyboard ? KeyboardAvoidingView : View;
   return (
     <Wrap style={{ flex: 1, backgroundColor: t.c.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      {header ? <NavHeader title={big ? '' : title} right={right} /> : null}
       {body}
-      {footer ? <Footer>{footer}</Footer> : null}
+      {header ? <NavHeader title={big || title} big={!!big} right={right} scrollY={scrollY} /> : null}
+      {footer ? <Footer onHeight={setFootH}>{footer}</Footer> : null}
     </Wrap>
   );
 }
 
-export function Footer({ children }) {
+export function Footer({ children, onHeight }) {
   const t = useTheme();
   const ins = useInsets();
   return (
-    <View style={{ backgroundColor: t.c.surface, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: t.c.line, paddingHorizontal: 16, paddingTop: 12, paddingBottom: Math.max(ins.bottom, 12) }}>
-      {children}
+    <View onLayout={(e) => onHeight && onHeight(e.nativeEvent.layout.height)}
+      style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+      <Glass radius={0} border={false} style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: Math.max(ins.bottom, 12) }}>
+        <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: StyleSheet.hairlineWidth, backgroundColor: t.c.line }} />
+        {children}
+      </Glass>
     </View>
   );
 }
@@ -121,7 +154,7 @@ export function Btn({ title, onPress, kind = 'primary', icon, small, disabled, s
   const flat = StyleSheet.flatten(style) || {};
   const { flex, ...inner } = flat;
   return (
-    <Tap onPress={disabled ? undefined : onPress} label={label || title} scale={0.97} outerStyle={[full ? { alignSelf: 'stretch' } : null, flex ? { flex } : null, outerStyle]}
+    <Tap onPress={disabled ? undefined : onPress} haptics={kind === 'primary' ? 'light' : undefined} label={label || title} scale={0.97} outerStyle={[full ? { alignSelf: 'stretch' } : null, flex ? { flex } : null, outerStyle]}
       style={[{
         height: h, borderRadius: h / 2, paddingHorizontal: small ? 16 : 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
         backgroundColor: map.bg, borderWidth: kind === 'outline' ? 1.5 : 0, borderColor: map.border, opacity: disabled ? 0.45 : 1, gap: 8,
@@ -141,8 +174,9 @@ export function Card({ children, style, onPress, label, pad = 16 }) {
 
 export function Section({ title, action, onAction, children, style }) {
   const t = useTheme();
+  const delay = useAppearDelay();
   return (
-    <View style={[{ marginTop: 26 }, style]}>
+    <Appear delay={80 + delay} from={14} style={[{ marginTop: 26 }, style]}>
       {title ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, paddingHorizontal: 4 }}>
           <Text style={{ flex: 1, fontFamily: t.fonts.title, fontSize: 19, color: t.c.text }}>{title}</Text>
@@ -154,7 +188,7 @@ export function Section({ title, action, onAction, children, style }) {
         </View>
       ) : null}
       {children}
-    </View>
+    </Appear>
   );
 }
 
@@ -207,7 +241,7 @@ export function Toggle({ value, onChange, label }) {
     <Switch
       accessibilityLabel={label}
       value={value}
-      onValueChange={onChange}
+      onValueChange={(v) => { haptic.select(); onChange(v); }}
       trackColor={{ false: t.c.surface2, true: t.tone }}
       thumbColor="#FFFFFF"
       ios_backgroundColor={t.c.surface2}
@@ -245,7 +279,7 @@ export function Segmented({ options, value, onChange, style }) {
         const lab = typeof o === 'string' ? o : o.label;
         const on = key === value;
         return (
-          <Tap key={key} onPress={() => onChange(key)} outerStyle={{ flex: 1 }} hitSlop={0} label={lab}
+          <Tap key={key} onPress={() => { haptic.select(); onChange(key); }} outerStyle={{ flex: 1 }} hitSlop={0} label={lab}
             style={{ height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? t.c.surface : 'transparent' }}>
             <Text numberOfLines={1} style={{ fontSize: 14, color: on ? t.c.text : t.c.text2, fontWeight: on ? '600' : '400' }}>{lab}</Text>
           </Tap>
@@ -255,13 +289,13 @@ export function Segmented({ options, value, onChange, style }) {
   );
 }
 
-export function Field({ label, value, onChangeText, placeholder, multiline, keyboardType, icon, style, autoFocus, secure, onSubmit, right }) {
+export function Field({ label, value, onChangeText, placeholder, multiline, keyboardType, icon, style, autoFocus, secure, onSubmit, right, maxLength, autoCapitalize, error, hint, ok }) {
   const t = useTheme();
   const [focus, setFocus] = useState(false);
   return (
     <View style={style}>
       {label ? <Text style={{ fontSize: 13.5, color: t.c.text2, marginBottom: 6, marginLeft: 4 }}>{label}</Text> : null}
-      <View style={{ flexDirection: 'row', alignItems: multiline ? 'flex-start' : 'center', backgroundColor: t.c.surface, borderRadius: 16, borderWidth: 1.5, borderColor: focus ? t.tone : 'transparent', paddingHorizontal: 14, minHeight: 52, gap: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: multiline ? 'flex-start' : 'center', backgroundColor: t.c.surface, borderRadius: 16, borderWidth: 1.5, borderColor: error ? (t.dark ? '#F08A80' : '#C2453A') : focus ? t.tone : 'transparent', paddingHorizontal: 14, minHeight: 52, gap: 10 }}>
         {icon ? <View style={{ paddingTop: multiline ? 14 : 0 }}><Icon name={icon} size={20} color={t.c.text2} /></View> : null}
         <TextInput
           value={value}
@@ -272,14 +306,19 @@ export function Field({ label, value, onChangeText, placeholder, multiline, keyb
           keyboardType={keyboardType}
           autoFocus={autoFocus}
           secureTextEntry={secure}
+          maxLength={maxLength}
+          autoCapitalize={autoCapitalize}
+          autoCorrect={false}
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
           onSubmitEditing={onSubmit}
           accessibilityLabel={label || placeholder}
           style={[{ flex: 1, fontSize: 16, color: t.c.text, paddingVertical: 14, outlineStyle: 'none' }, multiline ? { minHeight: 96, textAlignVertical: 'top' } : null]}
         />
+        {ok ? <Icon name="check" size={18} color={STATE_COLORS.ok[t.dark ? 'dark' : 'light'][0]} /> : null}
         {right || null}
       </View>
+      {error || hint ? <Text style={{ fontSize: 12.5, color: error ? (t.dark ? '#F08A80' : '#A8332A') : t.c.text2, marginTop: 6, marginLeft: 4 }}>{error || hint}</Text> : null}
     </View>
   );
 }
@@ -403,16 +442,17 @@ export function Toast({ msg }) {
   const [shown, setShown] = useState(msg);
   useEffect(() => {
     if (msg) setShown(msg);
-    Animated.timing(v, { toValue: msg ? 1 : 0, duration: msg ? 200 : 160, easing: Easing.out(Easing.cubic), useNativeDriver: ND }).start();
+    if (msg) Animated.spring(v, { toValue: 1, damping: 18, stiffness: 260, useNativeDriver: ND }).start();
+    else Animated.timing(v, { toValue: 0, duration: 160, easing: Easing.out(Easing.cubic), useNativeDriver: ND }).start();
   }, [msg]);
   if (!shown) return null;
   return (
     <Animated.View pointerEvents="none" accessibilityLiveRegion="polite"
-      style={{ position: 'absolute', left: 20, right: 20, top: ins.top + 10, opacity: v, transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }) }] }}>
-      <View style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: t.c.text, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 11, maxWidth: 360 }}>
-        <Icon name="check" size={18} color={t.c.bg} />
-        <Text style={{ color: t.c.bg, fontSize: 14.5, fontWeight: '600', flexShrink: 1 }}>{shown}</Text>
-      </View>
+      style={[{ position: 'absolute', left: 20, right: 20, top: ins.top + 8, opacity: v, transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [-18, 0] }) }, { scale: v.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) }] }]}>
+      <Glass radius={24} style={[{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12, maxWidth: 360 }]}>
+        <Icon name="check" size={18} color={t.toneText} />
+        <Text style={{ color: t.c.text, fontSize: 14.5, fontWeight: '600', flexShrink: 1 }}>{shown}</Text>
+      </Glass>
     </Animated.View>
   );
 }

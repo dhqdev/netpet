@@ -73,7 +73,7 @@ Todas as abas e fluxos funcionam, com dados de exemplo guardados no próprio app
 
 | Área | Telas |
 | --- | --- |
-| **Entrada** | Abertura, boas-vindas em três cartões, login, criar o pet com uma pergunta por tela, permissões na hora certa e interesses |
+| **Cadastro** | Abertura, boas-vindas, escolha do tipo de conta e dois caminhos: **tutor** (conta, foto do pet pela câmera ou galeria, nome, espécie, raça, idade, porte, cor, revisão, permissões e interesses) e **estabelecimento** (conta, tipo de negócio, dados com CNPJ ou CPF, endereço por CEP, serviços e preços por porte, horários, fotos, Pix e revisão) |
 | **Início e social** | Feed, histórias, post com comentários e patinhas, criar post, registrar cuidado, notificações, busca e o assistente netpet |
 | **Serviços** | Vitrine por categoria, resultados com filtros e mapa, página do parceiro, agendamento, resumo e pagamento (Pix, cartão ou no local), confirmação, meus agendamentos, atendimento ao vivo, avaliação e cupons |
 | **Matilhas** | Canais, conversa, fio de respostas, mensagens diretas, sobre a matilha, descobrir, criar matilha e o alerta de pet perdido |
@@ -91,15 +91,27 @@ Todas as abas e fluxos funcionam, com dados de exemplo guardados no próprio app
 
 ### Roteiro para testar
 
-1. **Entrada:** passe pelas boas-vindas, entre com qualquer opção e crie um pet.
+1. **Cadastro:** passe pelas boas-vindas e escolha *Tenho pet* ou *Tenho um negócio pet*. O pet criado vira o pet ativo do app; o negócio abre direto no modo parceiro.
 2. **Agendar:** em Serviços, abra o Pet Shop Bicho Bom, toque em Agendar, escolha um horário e pague com Pix.
 3. **Ao vivo:** no Início, toque no cartão de hoje para acompanhar o banho do Paçoca. Ao terminar, a foto do depois vira post.
-4. **Postar:** o botão **+** abre Postar, Agendar, Registrar cuidado e Avisar pet perdido.
+4. **Postar:** o **+** no topo do Início abre Postar, Agendar, Registrar cuidado e Avisar pet perdido.
 5. **Patinha:** dois toques em qualquer foto. O **⋯** de cada post tem salvar, denunciar e bloquear.
 6. **Trocar de pet:** toque no avatar do topo do Início. Segure para ver a lista.
 7. **Estilo e tema:** em Ajustes, *Aparência*, escolha entre as três direções e entre claro, escuro ou o tema do celular.
 8. **Modo parceiro:** em Ajustes, *Modo parceiro*. Inicie um atendimento, avance as etapas e aceite um pedido. Para voltar, *Negócio*, *Voltar para o modo tutor*.
 9. **Atalho:** em Ajustes, *Mapa de telas* abre qualquer tela direto.
+
+## Cadastro e movimento
+
+O cadastro começa perguntando quem você é. Cada caminho mostra no topo em que parte você está (Conta, Seu pet ou Negócio, Serviços, Repasse), faz uma pergunta por tela e termina numa revisão em que dá para editar qualquer resposta.
+
+<p align="center">
+  <img src="docs/app-cadastro.jpg" alt="Cadastro: tipo de conta, caminho do tutor e caminho do estabelecimento" width="900" />
+</p>
+
+- **Vidro:** menu inferior flutuante, cabeçalhos, folhas e botões sobre foto usam o Liquid Glass de verdade no iOS 26 e um vidro desfocado nos outros sistemas.
+- **Expansão:** ao tocar num cartão, a tela nova cresce a partir dele e volta para ele. As outras entram pela direita, e arrastar da borda esquerda volta.
+- **Molas e vibração:** tudo anda em molas suaves, o conteúdo entra em cascata e as ações importantes dão um toque leve de vibração.
 
 ## O modo parceiro
 
@@ -163,13 +175,14 @@ src/
   theme.js            tokens de cor, fonte e raio dos três estilos
   store.js            estado do app em memória: posts, agendamentos, mensagens, ajustes
   nav.js              navegação leve: uma aba ativa e uma pilha de telas por cima
+  motion.js           molas, vidro (Liquid Glass no iOS 26), vibração leve e entrada em cascata
   kit.js              componentes: tela, botão, cartão, lista, campo, chips, estados
   ui.js               toque, avatar do pet, marca do parceiro, mídia do post, folha
   icons.js            conjunto de ícones em SVG
   data.js             conteúdo de exemplo: pets, parceiros, agenda, posts, matilhas, saúde
   home/               o Início em cada um dos três estilos
   screens/
-    entrada.js        abertura, login, criar pet, permissões e interesses
+    entrada.js        abertura e cadastro de tutor e de estabelecimento
     social.js         post, história, criar post, cuidado, notificações e busca
     servicos.js       vitrine, parceiro, agendamento, pagamento, ao vivo e avaliação
     matilhas.js       canais, conversas, mensagens e pet perdido

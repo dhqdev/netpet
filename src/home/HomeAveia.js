@@ -27,12 +27,14 @@ export default function HomeAveia({ onSwitchPet, onPetList, onMore, bottomPad })
           <PetAvatar pet={t.pet} size={46} ring={2.5} />
         </Tap>
         <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={{ color: c.text2, fontSize: 13.5 }}>{TODAY_LONG}</Text>
+          <Text numberOfLines={1} style={{ color: c.text2, fontSize: 13.5 }}>{TODAY_LONG}</Text>
           <Text style={{ color: c.text, fontFamily: t.fonts.title, fontSize: 27, lineHeight: 33 }}>Oi, {t.pet.name}</Text>
         </View>
         <RoundButton icon="bell" label="Notificações" dot onPress={h.notifications} />
         <View style={{ width: 8 }} />
         <RoundButton icon="chat" label="Mensagens" onPress={h.dms} />
+          <View style={{ width: 6 }} />
+          <RoundButton icon="plus" label="Criar: postar, agendar ou registrar cuidado" onPress={h.create} />
       </View>
 
       {/* Semana e cartão Hoje */}
@@ -133,7 +135,7 @@ export default function HomeAveia({ onSwitchPet, onPetList, onMore, bottomPad })
 function RoundButton({ icon, label, dot, onPress }) {
   const t = useTheme();
   return (
-    <Tap onPress={onPress} label={label} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: t.c.surface, alignItems: 'center', justifyContent: 'center' }}>
+    <Tap onPress={onPress} label={label} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: t.c.surface, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name={icon} size={22} color={t.c.text} />
       {dot ? <View style={{ position: 'absolute', top: 11, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: t.c.accent, borderWidth: 1.5, borderColor: t.c.surface }} /> : null}
     </Tap>
