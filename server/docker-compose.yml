@@ -1,0 +1,14 @@
+# Sobe o Postgres no seu computador: docker compose up -d
+services:
+  banco:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: netpet
+      POSTGRES_PASSWORD: netpet
+      POSTGRES_DB: netpet
+    ports:
+      - "5432:5432"
+    volumes:
+      - dados:/var/lib/postgresql/data
+volumes:
+  dados:
